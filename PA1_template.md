@@ -128,7 +128,7 @@ Let's look at a time series plot:
 meanStepsPerInterval <- aggregate(steps ~ interval, data = activityData, FUN = mean)
 ggplot(meanStepsPerInterval, aes(x = interval, y = steps)) +
   geom_line() + ggtitle("Mean steps for each 5-minute time interval in a day") + 
-  labs(x = "Beginning of 5-min interval", y = "Mean steps per interval")
+  labs(x = "5-min interval ID", y = "Mean steps per interval")
 ```
 
 ![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
@@ -205,6 +205,39 @@ median(stepsPerDayImputed$steps)
 
 So it would appear that imputing the missing values only marginally changes the median value and leaves the mean unchanged.  The histogram is also very similar in its appearance, with the number of days with the total step counts has increased for each bin, but the overall shape looks rather unchanged.
 
+
+### Weekday / Weekend difference
+
+Here we look at whether there is a difference in steps taken for weekdays versus weekends.
+
+First, lets add a new column that will tell us whether a day is a weekday or weekend day:
+
+
+```r
+weekdays <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+weekends <- c("Saturday", "Sunday")
+
+actDataImputed$dayType <- weekdays(as.Date(actDataImputed$date))
+actDataImputed$dayType[actDataImputed$dayType %in% weekdays] <- "Weekday"
+actDataImputed$dayType[actDataImputed$dayType %in% weekends] <- "Weekend"
+actDataImputed$dayType <- as.factor(actDataImputed$dayType)
+```
+
+Now, lets look at activity over weekdays versus weekends:
+
+
+```r
+meanStepsPerIntervalByDayType <- aggregate(steps ~ interval + dayType, data = actDataImputed, FUN = mean)
+
+ggplot(meanStepsPerIntervalByDayType, aes(x = interval, y = steps)) +
+  geom_line() + ggtitle("Comparison of weekday and weekend mean steps per interval") + 
+  labs(x = "5-min interval ID", y = "Mean steps per interval") + 
+  facet_grid(dayType ~ .)
+```
+
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png)
+
+It appears that, on average, activity is more evenly distributed throughout the day on weekend days and the average number of steps for later intervals (1000+) is higher for weekends in general.
 
 
 
